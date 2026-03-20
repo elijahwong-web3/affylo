@@ -39,6 +39,43 @@ codesign --force --deep --sign - "/Applications/Affylo.app"
 
 Then open the app again from Applications.
 
+### If the DMG cannot be mounted / opened
+
+Try mounting the DMG via Terminal, then copy the app to `Applications`.
+
+1. Open Terminal and run:
+
+```bash
+hdiutil imageinfo "/path/to/Affylo-1.0.0-arm64.dmg"
+```
+
+2. Mount the DMG (read-only):
+
+```bash
+hdiutil attach -readonly -verbose "/path/to/Affylo-1.0.0-arm64.dmg"
+```
+
+3. Find the mounted volume name:
+
+```bash
+ls /Volumes
+```
+
+4. Copy the app into `Applications`:
+
+```bash
+cp -R "/Volumes/<MountedVolumeName>/Affylo.app" "/Applications/"
+```
+
+5. Clear quarantine and open:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Affylo.app"
+open "/Applications/Affylo.app"
+```
+
+If mounting fails, re-download the DMG and try again (a partially downloaded file often won’t mount).
+
 ## Core Features
 
 - Multiple charts in one workspace (create, switch, rename, delete).
