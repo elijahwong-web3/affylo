@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Group Chart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-canvas: #fffaf5;
+      --bg-card: #ffffff;
+      --bg-card-hover: #fff8f0;
+      --border: #f0e6dc;
+      --border-hover: #f97316;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --accent: #f97316;
+      --accent-soft: rgba(249, 115, 22, 0.12);
+      --line: #94a3b8;
+      --line-hover: #f97316;
+      --shadow: 0 4px 20px rgba(30, 41, 59, 0.08);
+      --shadow-hover: 0 12px 40px rgba(249, 115, 22, 0.18);
+      --root-gradient: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg-canvas);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .toolbar h1 {
+      font-family: 'Arvo', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: var(--root-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-right: 16px;
+    }
+
+    .toolbar button {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .toolbar button:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .toolbar button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .toolbar button.primary:hover {
+      filter: brightness(1.08);
+    }
+
+    .modal .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: #fff;
+      background: linear-gradient(180deg, #fb923c 0%, #f97316 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      box-shadow: 0 2px 0 rgba(194, 65, 12, 0.25), 0 4px 12px rgba(249, 115, 22, 0.25);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .modal .btn-primary:hover {
+      background: linear-gradient(180deg, #fdba74 0%, #f97316 100%);
+      box-shadow: 0 2px 0 rgba(194, 65, 12, 0.3), 0 6px 20px rgba(249, 115, 22, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .modal .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 0 rgba(194, 65, 12, 0.3), 0 2px 8px rgba(249, 115, 22, 0.2);
+    }
+
+    .modal .btn-primary-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 20px;
+      margin-top: 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .modal .btn-primary-secondary:hover {
+      background: var(--bg-canvas);
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.12);
+    }
+
+    .toolbar button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .toolbar .hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    .canvas-wrap {
+      position: fixed;
+      top: 56px; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+      background: var(--bg-canvas);
+      cursor: default;
+    }
+
+    .canvas-wrap.panning {
+      cursor: grab;
+    }
+
+    .canvas-wrap.panning:active {
+      cursor: grabbing;
+    }
+
+    .canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 2000px;
+      height: 1200px;
+      transform-origin: 0 0;
+      will-change: transform;
+    }
+
+    .connectors {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .connectors path.connector-line {
+      stroke: var(--line);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .connectors path.connector-line:hover {
+      stroke: var(--line-hover);
+    }
+
+    .connectors .connector-label-bg {
+      fill: var(--bg-card);
+      stroke: var(--accent);
+      stroke-width: 1.5;
+      pointer-events: none;
+    }
+
+    .connectors .connector-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      fill: var(--accent);
+      pointer-events: none;
+    }
+
+    .card {
+      position: absolute;
+      width: 200px;
+      cursor: grab;
+      z-index: 10;
+      transition: box-shadow 0.2s;
+    }
+
+    .card.dragging {
+      cursor: grabbing;
+      z-index: 50;
+    }
+
+    .card.selected {
+      z-index: 20;
+    }
+
+    .card .card-inner {
+      position: relative;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px 14px 14px;
+      padding-right: 36px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .card-handle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--line);
+      cursor: crosshair;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, background 0.2s, transform 0.2s;
+    }
+
+    .card:hover .card-handle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .card-handle:hover {
+      background: var(--accent);
+      transform: scale(1.2);
+    }
+
+    .card:hover .card-inner {
+      background: var(--bg-card-hover);
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .card.selected .card-inner {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .card-jurisdiction {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 24px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      max-width: 440px;
+      width: 100%;
+      max-height: 85vh;
+      overflow: auto;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      padding: 24px 24px 16px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-header h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-close {
+      background: var(--accent-soft);
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 20px 24px 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .multi-list {
+      margin-bottom: 8px;
+    }
+
+    .multi-list .item-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .multi-list .item-row input {
+      flex: 1;
+    }
+
+    .multi-list .add-btn,
+    .form-group .add-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 2px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .multi-list .add-btn:hover,
+    .form-group .add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .multi-list .remove-btn {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .multi-list .remove-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .detail-value {
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header class="toolbar">
+    <h1>Group Chart</h1>
+    <button type="button" class="primary" id="btn-add-card">Add company</button>
+    <button type="button" id="btn-add-link">Add connection</button>
+    <span class="hint" id="link-hint">Drag a card’s dot to another card to connect · Drag background to pan, scroll to zoom</span>
+  </header>
+
+  <div class="canvas-wrap">
+    <div class="canvas" id="canvas">
+      <svg class="connectors" id="connectors"></svg>
+      <div id="cards-container"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-card" aria-hidden="true">
+    <div class="modal" role="dialog">
+      <div class="modal-header">
+        <h2 id="modal-card-title">Company</h2>
+        <button class="modal-close" id="modal-card-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-card-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-link" aria-hidden="true">
+    <div class="modal" role="dialog">
+      <div class="modal-header">
+        <h2>Relationship label</h2>
+        <button class="modal-close" id="modal-link-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="link-label">Label (e.g. 100%, 1 share)</label>
+          <input type="text" id="link-label" placeholder="100%">
+        </div>
+        <button type="button" class="btn-primary" id="link-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CARD_WIDTH = 200;
+    const CARD_HEIGHT = 72;
+
+    let cards = [];
+    let relationships = [];
+    let nextCardId = 1;
+    let nextRelId = 1;
+    let linkFromId = null;
+    let editingCardId = null;
+    let panX = 0, panY = 0, zoom = 1;
+    let lastDraggedCardId = null;
+
+    const canvasEl = document.getElementById('canvas');
+    const canvasWrap = document.querySelector('.canvas-wrap');
+    const cardsContainer = document.getElementById('cards-container');
+    const connectorsEl = document.getElementById('connectors');
+    const btnAddCard = document.getElementById('btn-add-card');
+    const btnAddLink = document.getElementById('btn-add-link');
+    const linkHint = document.getElementById('link-hint');
+    const DEFAULT_HINT = 'Drag a card\'s dot to another card to connect · Drag background to pan, scroll to zoom';
+
+    function getCard(id) {
+      return cards.find(c => c.id === id);
+    }
+
+    function getCardEl(id) {
+      return document.querySelector(`[data-card-id="${id}"]`);
+    }
+
+    function cardBottomCenter(card) {
+      return {
+        x: card.x + CARD_WIDTH / 2,
+        y: card.y + CARD_HEIGHT
+      };
+    }
+
+    function cardTopCenter(card) {
+      return {
+        x: card.x + CARD_WIDTH / 2,
+        y: card.y
+      };
+    }
+
+    function renderConnectors() {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      const NS = 'http://www.w3.org/2000/svg';
+
+      function addLabelPill(midX, midY, text) {
+        if (text == null || text === '') return;
+        const pad = 6;
+        const w = Math.max(String(text).length * 6 + pad * 2, 28);
+        const h = 18;
+        const rx = 4;
+        const rect = document.createElementNS(NS, 'rect');
+        rect.setAttribute('x', midX - w / 2);
+        rect.setAttribute('y', midY - h / 2);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('rx', rx);
+        rect.setAttribute('ry', rx);
+        rect.setAttribute('class', 'connector-label-bg');
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', midX);
+        t.setAttribute('y', midY + 1);
+        t.setAttribute('text-anchor', 'middle');
+        t.setAttribute('dominant-baseline', 'middle');
+        t.setAttribute('class', 'connector-label');
+        t.textContent = text;
+        g.appendChild(rect);
+        g.appendChild(t);
+      }
+
+      relationships.forEach(rel => {
+        const from = getCard(rel.fromId);
+        const to = getCard(rel.toId);
+        if (!from || !to) return;
+        const p1 = cardBottomCenter(from);
+        const p2 = cardTopCenter(to);
+        const midX = (p1.x + p2.x) / 2;
+        const midY = (p1.y + p2.y) / 2;
+        const path = document.createElementNS(NS, 'path');
+        const vertDist = Math.abs(p2.y - p1.y);
+        const pull = Math.min(vertDist * 0.4, 80);
+        const c1x = p1.x;
+        const c1y = p1.y + pull;
+        const c2x = p2.x;
+        const c2y = p2.y - pull;
+        path.setAttribute('d', `M ${p1.x} ${p1.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`);
+        path.setAttribute('class', 'connector-line');
+        g.appendChild(path);
+        addLabelPill(midX, midY, rel.label);
+      });
+
+      connectorsEl.innerHTML = '';
+      connectorsEl.appendChild(g);
+    }
+
+    function renderCards() {
+      cardsContainer.innerHTML = '';
+      cards.forEach(card => {
+        const el = document.createElement('div');
+        el.className = 'card' + (linkFromId === card.id ? ' selected' : '');
+        el.setAttribute('data-card-id', card.id);
+        el.style.left = card.x + 'px';
+        el.style.top = card.y + 'px';
+        const name = card.name || 'Unnamed company';
+        const jurisdiction = card.jurisdiction || '—';
+        el.innerHTML = `
+          <div class="card-inner">
+            <div class="card-title">${escapeHtml(name)}</div>
+            <div class="card-jurisdiction">${escapeHtml(jurisdiction)}</div>
+            <div class="card-handle" data-card-id="${card.id}" title="Drag to another card to connect"></div>
+          </div>
+        `;
+        const handle = el.querySelector('.card-handle');
+        handle.addEventListener('mousedown', (e) => { e.stopPropagation(); onHandleMouseDown(e, card.id); });
+        el.addEventListener('mousedown', onCardMouseDown);
+        el.addEventListener('click', (e) => {
+          if (e.detail !== 1) return;
+          if (lastDraggedCardId === card.id) {
+            lastDraggedCardId = null;
+            return;
+          }
+          if (!el.classList.contains('dragging')) {
+            setTimeout(() => {
+              if (lastDraggedCardId === card.id) { lastDraggedCardId = null; return; }
+              if (!el.classList.contains('dragging')) onCardClick(card.id);
+            }, 0);
+          }
+        });
+        cardsContainer.appendChild(el);
+      });
+      renderConnectors();
+    }
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function applyCanvasTransform() {
+      canvasEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    }
+
+    function getCanvasCoords(e) {
+      const r = canvasWrap.getBoundingClientRect();
+      const wx = e.clientX - r.left;
+      const wy = e.clientY - r.top;
+      return {
+        x: (wx - panX) / zoom,
+        y: (wy - panY) / zoom
+      };
+    }
+
+    function onHandleMouseDown(e, fromCardId) {
+      if (e.button !== 0) return;
+      const card = getCard(fromCardId);
+      if (!card) return;
+      const from = { x: card.x + CARD_WIDTH - 8, y: card.y + 10 };
+      const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      tempPath.setAttribute('class', 'connector-line');
+      tempPath.setAttribute('stroke-dasharray', '6 4');
+      const g = connectorsEl.querySelector('g') || document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      if (!connectorsEl.querySelector('g')) connectorsEl.appendChild(g);
+      g.appendChild(tempPath);
+
+      function move(ev) {
+        const to = getCanvasCoords(ev);
+        const midX = (from.x + to.x) / 2;
+        const c1x = from.x + (to.x - from.x) * 0.5;
+        const c2x = to.x - (to.x - from.x) * 0.5;
+        tempPath.setAttribute('d', `M ${from.x} ${from.y} C ${c1x} ${from.y}, ${c2x} ${to.y}, ${to.x} ${to.y}`);
+      }
+
+      function up(ev) {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+        tempPath.remove();
+        const target = ev.target;
+        const cardEl = target.closest ? target.closest('.card') : null;
+        const toCardId = cardEl ? parseInt(cardEl.getAttribute('data-card-id'), 10) : null;
+        if (toCardId != null && toCardId !== fromCardId) {
+          document.getElementById('link-label').value = '';
+          document.getElementById('modal-link').classList.add('active');
+          window._pendingLink = { fromId: fromCardId, toId: toCardId };
+        }
+      }
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    }
+
+    function onCardMouseDown(e) {
+      if (e.button !== 0) return;
+      if (e.target.closest('.card-handle')) return;
+      const el = e.currentTarget;
+      const id = parseInt(el.getAttribute('data-card-id'), 10);
+      const card = getCard(id);
+      if (!card) return;
+
+      if (linkFromId === 'waiting') return;
+
+      if (linkFromId !== null && linkFromId !== 'waiting') {
+        if (linkFromId === id) {
+          linkFromId = null;
+          btnAddLink.classList.remove('active');
+          linkHint.textContent = DEFAULT_HINT;
+          renderCards();
+          return;
+        }
+        document.getElementById('link-label').value = '';
+        document.getElementById('modal-link').classList.add('active');
+        window._pendingLink = { fromId: linkFromId, toId: id };
+        linkFromId = null;
+        btnAddLink.classList.remove('active');
+        linkHint.textContent = DEFAULT_HINT;
+        renderCards();
+        return;
+      }
+
+      el.classList.add('dragging');
+      const startCanvas = getCanvasCoords(e);
+      const startCardX = card.x;
+      const startCardY = card.y;
+      const DRAG_THRESHOLD = 5;
+      let didDrag = false;
+
+      function move(ev) {
+        const cur = getCanvasCoords(ev);
+        if (!didDrag && (Math.abs(cur.x - startCanvas.x) > DRAG_THRESHOLD || Math.abs(cur.y - startCanvas.y) > DRAG_THRESHOLD)) {
+          didDrag = true;
+        }
+        card.x = Math.max(0, startCardX + (cur.x - startCanvas.x));
+        card.y = Math.max(0, startCardY + (cur.y - startCanvas.y));
+        el.style.left = card.x + 'px';
+        el.style.top = card.y + 'px';
+        renderConnectors();
+      }
+
+      function up() {
+        if (didDrag) lastDraggedCardId = id;
+        el.classList.remove('dragging');
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    }
+
+    function onCardClick(id) {
+      if (linkFromId !== null) return;
+      editingCardId = id;
+      openCardModal(id);
+    }
+
+    function openCardModal(id) {
+      const card = getCard(id);
+      if (!card) return;
+      const modal = document.getElementById('modal-card');
+      document.getElementById('modal-card-title').textContent = card.name || 'Company details';
+      const isNew = !card.name && !card.jurisdiction && !(card.details && Object.keys(card.details).length);
+      const body = document.getElementById('modal-card-body');
+      body.innerHTML = `
+        <div class="form-group">
+          <label>Company name</label>
+          <input type="text" id="card-name" value="${escapeHtml(card.name || '')}" placeholder="e.g. Acme Ltd">
+        </div>
+        <div class="form-group">
+          <label>Jurisdiction</label>
+          <input type="text" id="card-jurisdiction" value="${escapeHtml(card.jurisdiction || '')}" placeholder="e.g. Cayman, Hong Kong">
+        </div>
+        <div class="form-group">
+          <label>Director(s)</label>
+          <div class="multi-list" id="card-directors-list"></div>
+          <button type="button" class="add-btn" id="card-directors-add">+ Add director</button>
+        </div>
+        <div class="form-group">
+          <label>Shareholder(s)</label>
+          <div class="multi-list" id="card-shareholders-list"></div>
+          <button type="button" class="add-btn" id="card-shareholders-add">+ Add shareholder</button>
+        </div>
+        <button type="button" class="btn-primary" id="card-save">${isNew ? 'Add company' : 'Save'}</button>
+      `;
+      function ensureArray(val) {
+        if (Array.isArray(val)) return val.slice();
+        if (val == null || val === '') return [];
+        const s = String(val).trim();
+        return s ? [s] : [];
+      }
+      const directors = ensureArray(card.details && card.details['Director']);
+      const shareholders = ensureArray(card.details && card.details['Shareholder']);
+      if (directors.length === 0) directors.push('');
+      if (shareholders.length === 0) shareholders.push('');
+      function renderMultiList(containerId, values, placeholder) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        values.forEach((v, i) => {
+          const row = document.createElement('div');
+          row.className = 'item-row';
+          row.innerHTML = `<input type="text" data-index="${i}" value="${escapeHtml(v)}" placeholder="${escapeHtml(placeholder)}"><button type="button" class="remove-btn" data-index="${i}" aria-label="Remove">&times;</button>`;
+          const input = row.querySelector('input');
+          const removeBtn = row.querySelector('.remove-btn');
+          removeBtn.addEventListener('click', () => {
+            values.splice(i, 1);
+            if (values.length === 0) values.push('');
+            renderMultiList(containerId, values, placeholder);
+          });
+          input.addEventListener('input', () => { values[i] = input.value; });
+          container.appendChild(row);
+        });
+      }
+      renderMultiList('card-directors-list', directors, 'Name');
+      renderMultiList('card-shareholders-list', shareholders, 'e.g. Parent Co (100%)');
+      document.getElementById('card-directors-add').addEventListener('click', () => {
+        directors.push('');
+        renderMultiList('card-directors-list', directors, 'Name');
+      });
+      document.getElementById('card-shareholders-add').addEventListener('click', () => {
+        shareholders.push('');
+        renderMultiList('card-shareholders-list', shareholders, 'e.g. Parent Co (100%)');
+      });
+      body.querySelector('#card-save').addEventListener('click', () => saveCardFromModal(id, directors, shareholders));
+      modal.classList.add('active');
+    }
+
+    function saveCardFromModal(id, directors, shareholders) {
+      const card = getCard(id);
+      if (!card) return;
+      card.name = document.getElementById('card-name').value.trim() || 'Unnamed company';
+      card.jurisdiction = document.getElementById('card-jurisdiction').value.trim() || '';
+      card.details = card.details || {};
+      card.details['Director'] = (directors || []).map(s => s.trim()).filter(Boolean);
+      card.details['Shareholder'] = (shareholders || []).map(s => s.trim()).filter(Boolean);
+      document.getElementById('modal-card').classList.remove('active');
+      renderCards();
+    }
+
+    function showCardDetails(id) {
+      const card = getCard(id);
+      if (!card) return;
+      const modal = document.getElementById('modal-card');
+      document.getElementById('modal-card-title').textContent = card.name || 'Company';
+      const body = document.getElementById('modal-card-body');
+      const details = card.details || {};
+      const directors = Array.isArray(details['Director']) ? details['Director'] : (details['Director'] ? [details['Director']] : []);
+      const shareholders = Array.isArray(details['Shareholder']) ? details['Shareholder'] : (details['Shareholder'] ? [details['Shareholder']] : []);
+      const directorRows = directors.length ? directors.map(d => `<div class="detail-row"><span class="detail-label">Director</span><span class="detail-value">${escapeHtml(d)}</span></div>`).join('') : '<div class="detail-row"><span class="detail-label">Director</span><span class="detail-value">—</span></div>';
+      const shareholderRows = shareholders.length ? shareholders.map(s => `<div class="detail-row"><span class="detail-label">Shareholder</span><span class="detail-value">${escapeHtml(s)}</span></div>`).join('') : '<div class="detail-row"><span class="detail-label">Shareholder</span><span class="detail-value">—</span></div>';
+      body.innerHTML = `
+        <div class="detail-row"><span class="detail-label">Jurisdiction</span><span class="detail-value">${escapeHtml(card.jurisdiction || '—')}</span></div>
+        ${directorRows}
+        ${shareholderRows}
+        <button type="button" class="btn-primary-secondary" id="card-edit-btn">Edit</button>
+      `;
+      body.querySelector('#card-edit-btn').addEventListener('click', () => {
+        modal.classList.remove('active');
+        openCardModal(id);
+      });
+      modal.classList.add('active');
+    }
+
+    btnAddCard.addEventListener('click', () => {
+      const card = {
+        id: nextCardId++,
+        x: 100 + cards.length * 30,
+        y: 100 + cards.length * 30,
+        name: '',
+        jurisdiction: '',
+        details: {}
+      };
+      cards.push(card);
+      renderCards();
+      openCardModal(card.id);
+    });
+
+    btnAddLink.addEventListener('click', () => {
+      if (linkFromId !== null) {
+        linkFromId = null;
+        btnAddLink.classList.remove('active');
+        linkHint.textContent = DEFAULT_HINT;
+        renderCards();
+        return;
+      }
+      linkHint.textContent = 'Click first company, then second company';
+      btnAddLink.classList.add('active');
+      linkFromId = 'waiting';
+    });
+
+    document.getElementById('link-save').addEventListener('click', () => {
+      const pending = window._pendingLink;
+      if (!pending) return;
+      const label = document.getElementById('link-label').value.trim() || '—';
+      relationships.push({
+        id: nextRelId++,
+        fromId: pending.fromId,
+        toId: pending.toId,
+        label
+      });
+      document.getElementById('modal-link').classList.remove('active');
+      window._pendingLink = null;
+      renderConnectors();
+    });
+
+    document.getElementById('modal-link-close').addEventListener('click', () => {
+      document.getElementById('modal-link').classList.remove('active');
+      window._pendingLink = null;
+    });
+
+    document.getElementById('modal-card-close').addEventListener('click', () => {
+      document.getElementById('modal-card').classList.remove('active');
+    });
+
+    document.getElementById('modal-card').addEventListener('click', (e) => {
+      if (e.target.id === 'modal-card') document.getElementById('modal-card').classList.remove('active');
+    });
+
+    function onCardClick(id) {
+      if (linkFromId === 'waiting') {
+        linkFromId = id;
+        linkHint.textContent = 'Now click the second company';
+        renderCards();
+        return;
+      }
+      if (linkFromId !== null) return;
+      const card = getCard(id);
+      if (!card) return;
+      const hasDetails = card.name || card.jurisdiction || (card.details && Object.keys(card.details).length);
+      if (hasDetails) {
+        showCardDetails(id);
+      } else {
+        openCardModal(id);
+      }
+    }
+
+    canvasWrap.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      if (e.target.closest('.card')) return;
+      if (e.target.closest('.modal-overlay')) return;
+      const startX = e.clientX - panX;
+      const startY = e.clientY - panY;
+      canvasWrap.classList.add('panning');
+      function move(ev) {
+        panX = ev.clientX - startX;
+        panY = ev.clientY - startY;
+        applyCanvasTransform();
+      }
+      function up() {
+        canvasWrap.classList.remove('panning');
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+
+    canvasWrap.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const r = canvasWrap.getBoundingClientRect();
+      const wx = e.clientX - r.left;
+      const wy = e.clientY - r.top;
+      const cx = (wx - panX) / zoom;
+      const cy = (wy - panY) / zoom;
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = Math.min(4, Math.max(0.25, zoom * factor));
+      panX = wx - cx * newZoom;
+      panY = wy - cy * newZoom;
+      zoom = newZoom;
+      applyCanvasTransform();
+    }, { passive: false });
+
+    applyCanvasTransform();
+    renderCards();
+  </script>
+</body>
+</html>

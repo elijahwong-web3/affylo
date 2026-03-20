@@ -1,0 +1,173 @@
+{
+  "charts": [
+    {
+      "id": "chart-default",
+      "name": "Sample Group Chart",
+      "updatedAt": "2026-03-19T09:17:25.103Z",
+      "cards": [
+        {
+          "id": 1,
+          "x": 783.75,
+          "y": 164.75,
+          "name": "Blue Harbor Holdings Ltd",
+          "jurisdiction": "Cayman Islands",
+          "details": {
+            "Director": [
+              "Alex Turner"
+            ],
+            "Shareholder": [],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2021-02-15",
+            "ShareCapital": "USD 50,000",
+            "Remark": "Fictional example for demo use."
+          }
+        },
+        {
+          "id": 2,
+          "x": 506,
+          "y": 355,
+          "name": "Blue Harbor IP Pte. Ltd.",
+          "jurisdiction": "Singapore",
+          "details": {
+            "Director": [
+              "Jamie Lee"
+            ],
+            "Shareholder": [
+              "Blue Harbor Holdings Ltd"
+            ],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2021-04-03",
+            "ShareCapital": "SGD 10,000",
+            "Remark": ""
+          }
+        },
+        {
+          "id": 3,
+          "x": 781,
+          "y": 346,
+          "name": "Blue Harbor Operations Ltd",
+          "jurisdiction": "Hong Kong",
+          "details": {
+            "Director": [
+              "Morgan Chan"
+            ],
+            "Shareholder": [
+              "Blue Harbor Holdings Ltd"
+            ],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2021-05-19",
+            "ShareCapital": "HKD 100,000",
+            "Remark": ""
+          }
+        },
+        {
+          "id": 4,
+          "x": 1050,
+          "y": 351,
+          "name": "Blue Harbor Ventures LLC",
+          "jurisdiction": "Delaware, USA",
+          "details": {
+            "Director": [
+              "Taylor Brooks"
+            ],
+            "Shareholder": [
+              "Blue Harbor Holdings Ltd"
+            ],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2022-01-11",
+            "ShareCapital": "USD 1,000",
+            "Remark": ""
+          }
+        },
+        {
+          "id": 5,
+          "x": 645,
+          "y": 562,
+          "name": "Blue Harbor Services Sdn. Bhd.",
+          "jurisdiction": "Malaysia",
+          "details": {
+            "Director": [
+              "Nur Aisyah"
+            ],
+            "Shareholder": [
+              "Blue Harbor Operations Ltd"
+            ],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2022-07-20",
+            "ShareCapital": "MYR 100,000",
+            "Remark": ""
+          }
+        },
+        {
+          "id": 6,
+          "x": 959,
+          "y": 570,
+          "name": "Blue Harbor Distribution Ltd",
+          "jurisdiction": "United Kingdom",
+          "details": {
+            "Director": [
+              "Sophie King"
+            ],
+            "Shareholder": [
+              "Blue Harbor Operations Ltd"
+            ],
+            "RegistrationAddress": "Sample address only",
+            "IncorporationDate": "2022-09-08",
+            "ShareCapital": "GBP 10,000",
+            "Remark": ""
+          }
+        }
+      ],
+      "relationships": [
+        {
+          "id": 1,
+          "fromId": 1,
+          "toId": 2,
+          "label": "100%",
+          "labelT": 0.5
+        },
+        {
+          "id": 2,
+          "fromId": 1,
+          "toId": 3,
+          "label": "100%",
+          "labelT": 0.66,
+          "control1Dx": 9.333333333333334,
+          "control1Dy": 4,
+          "control2Dx": 9.333333333333334,
+          "control2Dy": 4
+        },
+        {
+          "id": 3,
+          "fromId": 1,
+          "toId": 4,
+          "label": "100%",
+          "labelT": 0.54,
+          "control1Dx": 5.333333333333333,
+          "control1Dy": -16,
+          "control2Dx": 5.333333333333333,
+          "control2Dy": -16
+        },
+        {
+          "id": 4,
+          "fromId": 3,
+          "toId": 5,
+          "label": "70%"
+        },
+        {
+          "id": 5,
+          "fromId": 3,
+          "toId": 6,
+          "label": "100%",
+          "control1Dx": 0,
+          "control1Dy": 0,
+          "control2Dx": 0,
+          "control2Dy": 0
+        }
+      ],
+      "nextCardId": 7,
+      "nextRelId": 6
+    }
+  ],
+  "activeChartId": "chart-default"
+}
