@@ -22,14 +22,14 @@ If macOS warns about an unidentified developer, right-click `Affylo.app` and cho
 
 Affylo is currently distributed unsigned. If macOS blocks launch:
 
-1. Move `Affylo.app` to `Applications`.
+1. **Do not run it directly from the mounted DMG.** Copy `Affylo.app` into `Applications`.
 2. Open Terminal and run:
 
 ```bash
 xattr -dr com.apple.quarantine "/Applications/Affylo.app"
 ```
 
-3. Open the app again (right-click -> **Open** on first launch if needed).
+3. Open `Affylo` again from **Applications** (right-click -> **Open** on first launch if needed).
 
 If it still fails, run:
 
@@ -37,7 +37,7 @@ If it still fails, run:
 codesign --force --deep --sign - "/Applications/Affylo.app"
 ```
 
-Then open the app again.
+Then open the app again from Applications.
 
 ## Core Features
 
