@@ -18,6 +18,27 @@ Hope you enjoy using Affylo. For any feedback or questions about using Affylo, p
 
 If macOS warns about an unidentified developer, right-click `Affylo.app` and choose **Open** once.
 
+### If macOS says the app is damaged or cannot be opened
+
+Affylo is currently distributed unsigned. If macOS blocks launch:
+
+1. Move `Affylo.app` to `Applications`.
+2. Open Terminal and run:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Affylo.app"
+```
+
+3. Open the app again (right-click -> **Open** on first launch if needed).
+
+If it still fails, run:
+
+```bash
+codesign --force --deep --sign - "/Applications/Affylo.app"
+```
+
+Then open the app again.
+
 ## Core Features
 
 - Multiple charts in one workspace (create, switch, rename, delete).
